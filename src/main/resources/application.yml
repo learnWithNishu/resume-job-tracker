@@ -1,0 +1,16 @@
+spring:
+  application:
+     name: resume-jobTracker
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/resumetracker
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
