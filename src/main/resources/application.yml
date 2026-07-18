@@ -1,12 +1,10 @@
 spring:
   application:
-     name: resume-jobTracker
-
+    name: resume-jobTracker
   datasource:
     url: jdbc:postgresql://localhost:5432/resumetracker
     username: postgres
     password: postgres
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,3 +12,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+server:
+  port: 8081
