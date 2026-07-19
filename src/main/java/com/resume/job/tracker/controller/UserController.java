@@ -1,6 +1,8 @@
 package com.resume.job.tracker.controller;
 
 
+import com.resume.job.tracker.dto.LoginRequest;
+import com.resume.job.tracker.dto.LoginResponse;
 import com.resume.job.tracker.dto.UserRegisterRequest;
 import com.resume.job.tracker.dto.UserResponse;
 import com.resume.job.tracker.service.UserService;
@@ -22,6 +24,11 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<UserResponse> createNewUser(@RequestBody @Valid UserRegisterRequest userRegisterRequest){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(userRegisterRequest));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> userLogin(@RequestBody LoginRequest loginRequest){
+       return ResponseEntity.status(HttpStatus.OK).body(userService.loginUser(loginRequest));
     }
 
 }
