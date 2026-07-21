@@ -6,14 +6,12 @@ import com.resume.job.tracker.dto.LoginResponse;
 import com.resume.job.tracker.dto.UserRegisterRequest;
 import com.resume.job.tracker.dto.UserResponse;
 import com.resume.job.tracker.service.UserService;
+import jakarta.persistence.Id;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,6 +27,11 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> userLogin(@RequestBody LoginRequest loginRequest){
        return ResponseEntity.status(HttpStatus.OK).body(userService.loginUser(loginRequest));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<String> getMe(){
+        return ResponseEntity.ok("You are authenticated");
     }
 
 }
