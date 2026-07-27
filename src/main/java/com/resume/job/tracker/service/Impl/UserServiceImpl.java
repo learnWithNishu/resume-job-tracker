@@ -55,17 +55,21 @@ public class UserServiceImpl implements UserService {
     }
 
     public LoginResponse loginUser(LoginRequest loginRequest){
-        if(!userRepository.findByEmail(loginRequest.getEmail()).isPresent()){
-            throw new UsernameNotFoundException("User not found with emailId: " + loginRequest.getEmail());
-        }
-        Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
+//        if(!userRepository.findByEmail(loginRequest.getEmail()).isPresent()){
+//            throw new UsernameNotFoundException("User not found with emailId: " + loginRequest.getEmail());
+//        }
+//        Optional<User> user = userRepository.findByEmail(loginRequest.getEmail()).get();
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(()-> new UsernameNotFoundException("User not found with emailId: " + loginRequest.getEmail()));
+
         String rawPassword = loginRequest.getPassword();
-        String storedHashPassword = user.get().getPassword();
+        String storedHashPassword = user.getPassword();
         boolean matchPassword = passwordEncoder.matches(rawPassword, storedHashPassword);
         if(!matchPassword){
             throw new InvalidCredentialsException("Wrong password");
         }
-        String token = jwtService.generateToken(loginRequest.getEmail());
+        String token = jwtService.generateToken(user.getEmail(), user.getId());
+//        String token = jwtService.generateToken(loginRequest.getEmail());
         return new LoginResponse(token);
     }
 
