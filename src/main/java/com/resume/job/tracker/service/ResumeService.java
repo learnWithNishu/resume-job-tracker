@@ -12,5 +12,5 @@ public interface ResumeService {
     List<ResumeUploadResponse> getAllResumes(String email);
     ResumeUploadResponse getResumeById(Long id, String email) throws IllegalAccessException;
     void deleteResume(Long id, String email) throws IllegalAccessException;
-
+    String getResumeTextById(Long resumeId, Long userId) throws IllegalAccessException;
 }
