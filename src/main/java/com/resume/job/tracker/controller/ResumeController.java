@@ -1,6 +1,8 @@
 package com.resume.job.tracker.controller;
 
 import com.resume.job.tracker.dto.ResumeUploadResponse;
+import com.resume.job.tracker.entity.User;
+import com.resume.job.tracker.repository.UserRepository;
 import com.resume.job.tracker.service.ResumeService;
 import jakarta.persistence.Id;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/resumes")
 @RequiredArgsConstructor
 public class ResumeController {
     private final ResumeService resumeService;
+    private final UserRepository userRepository;
     @PostMapping("/upload")
     public ResponseEntity<ResumeUploadResponse> resumeUploaded(@RequestParam("file")MultipartFile file) throws IOException {
        String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -39,5 +43,12 @@ public class ResumeController {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         resumeService.deleteResume(id, email);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/{Id}/text")
+    public ResponseEntity<String> getResumeText(@PathVariable Long id) throws IllegalAccessException{
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> user = userRepository.findByEmail(email);
+        return ResponseEntity.ok(resumeService.getResumeTextById(id, user.get().getId()));
     }
 }

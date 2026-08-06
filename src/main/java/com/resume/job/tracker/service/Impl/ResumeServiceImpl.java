@@ -3,7 +3,6 @@ package com.resume.job.tracker.service.Impl;
 import com.resume.job.tracker.dto.ResumeUploadResponse;
 import com.resume.job.tracker.entity.Resume;
 import com.resume.job.tracker.entity.User;
-import com.resume.job.tracker.exceptions.EmailAlreadyExistsException;
 import com.resume.job.tracker.exceptions.ResumeNotFoundException;
 import com.resume.job.tracker.repository.ResumeRepository;
 import com.resume.job.tracker.repository.UserRepository;
@@ -12,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -91,6 +89,16 @@ public class ResumeServiceImpl implements ResumeService {
             resumeRepository.deleteById(id);
         }
 
+    }
+
+    @Override
+    public String getResumeTextById(Long resumeId, Long userId) throws IllegalAccessException {
+        Resume resume = resumeRepository.findById(resumeId).orElseThrow(()-> new ResumeNotFoundException("Resume not found by Id: !" + resumeId));
+        if(!resume.getUser().getId().equals(userId)){
+         throw new IllegalAccessException("You do not have permission to delete this resume.");
+
+        }
+        return resume.getParsedText();
     }
 
 }
