@@ -1,10 +1,10 @@
 package com.resume.job.tracker.controller;
 
 import com.resume.job.tracker.dto.ResumeUploadResponse;
-import com.resume.job.tracker.entity.User;
+import com.resume.job.tracker.dto.SaveGeneratedResumeRequest;
 import com.resume.job.tracker.repository.UserRepository;
 import com.resume.job.tracker.service.ResumeService;
-import jakarta.persistence.Id;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/resumes")
 @RequiredArgsConstructor
 public class ResumeController {
     private final ResumeService resumeService;
-    private final UserRepository userRepository;
     @PostMapping("/upload")
     public ResponseEntity<ResumeUploadResponse> resumeUploaded(@RequestParam("file")MultipartFile file) throws IOException {
        String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -42,13 +40,19 @@ public class ResumeController {
     public ResponseEntity<?> deleteResume(@PathVariable Long id) throws IllegalAccessException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         resumeService.deleteResume(id, email);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{Id}/text")
+    @GetMapping("/{id}/text")
     public ResponseEntity<String> getResumeText(@PathVariable Long id) throws IllegalAccessException{
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<User> user = userRepository.findByEmail(email);
-        return ResponseEntity.ok(resumeService.getResumeTextById(id, user.get().getId()));
+        return ResponseEntity.ok(resumeService.getResumeTextById(id, email));
+    }
+
+    @PostMapping("/save-generated")
+    public ResponseEntity<ResumeUploadResponse> saveGeneratedResume(@RequestBody @Valid SaveGeneratedResumeRequest request){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+      ResumeUploadResponse response = resumeService.saveGeneratedResume(request, email);
+        return  ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

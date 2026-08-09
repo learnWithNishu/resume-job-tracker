@@ -1,6 +1,7 @@
 package com.resume.job.tracker.service;
 
 import com.resume.job.tracker.dto.ResumeUploadResponse;
+import com.resume.job.tracker.dto.SaveGeneratedResumeRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -12,5 +13,6 @@ public interface ResumeService {
     List<ResumeUploadResponse> getAllResumes(String email);
     ResumeUploadResponse getResumeById(Long id, String email) throws IllegalAccessException;
     void deleteResume(Long id, String email) throws IllegalAccessException;
-    String getResumeTextById(Long resumeId, Long userId) throws IllegalAccessException;
+    String getResumeTextById(Long resumeId, String email) throws IllegalAccessException;
+    ResumeUploadResponse saveGeneratedResume(SaveGeneratedResumeRequest request, String email);
 }
