@@ -2,7 +2,7 @@ package com.resume.job.tracker.controller;
 
 import com.resume.job.tracker.dto.ResumeUploadResponse;
 import com.resume.job.tracker.dto.SaveGeneratedResumeRequest;
-import com.resume.job.tracker.repository.UserRepository;
+import com.resume.job.tracker.exceptions.UnauthorizedAccessException;
 import com.resume.job.tracker.service.ResumeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,19 +32,19 @@ public class ResumeController {
         return ResponseEntity.status(HttpStatus.OK).body(resumeService.getAllResumes(email));
     }
     @GetMapping("/{id}")
-    public ResponseEntity<?> getResume(@PathVariable Long id) throws IllegalAccessException {
+    public ResponseEntity<?> getResume(@PathVariable Long id)  {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.status(HttpStatus.OK).body(resumeService.getResumeById(id, email));
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteResume(@PathVariable Long id) throws IllegalAccessException {
+    public ResponseEntity<?> deleteResume(@PathVariable Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         resumeService.deleteResume(id, email);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/text")
-    public ResponseEntity<String> getResumeText(@PathVariable Long id) throws IllegalAccessException{
+    public ResponseEntity<String> getResumeText(@PathVariable Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(resumeService.getResumeTextById(id, email));
     }

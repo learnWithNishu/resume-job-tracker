@@ -11,8 +11,8 @@ public interface ResumeService {
 
     ResumeUploadResponse uploadResume(MultipartFile file, String email) throws IOException;
     List<ResumeUploadResponse> getAllResumes(String email);
-    ResumeUploadResponse getResumeById(Long id, String email) throws IllegalAccessException;
-    void deleteResume(Long id, String email) throws IllegalAccessException;
-    String getResumeTextById(Long resumeId, String email) throws IllegalAccessException;
+    ResumeUploadResponse getResumeById(Long id, String email);
+    void deleteResume(Long id, String email);
+    String getResumeTextById(Long resumeId, String email);
     ResumeUploadResponse saveGeneratedResume(SaveGeneratedResumeRequest request, String email);
 }
