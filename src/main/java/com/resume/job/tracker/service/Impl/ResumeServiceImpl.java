@@ -5,6 +5,8 @@ import com.resume.job.tracker.dto.SaveGeneratedResumeRequest;
 import com.resume.job.tracker.entity.Resume;
 import com.resume.job.tracker.entity.User;
 import com.resume.job.tracker.exceptions.ResumeNotFoundException;
+import com.resume.job.tracker.exceptions.UnauthorizedAccessException;
+import com.resume.job.tracker.exceptions.UserNotFoundException;
 import com.resume.job.tracker.repository.ResumeRepository;
 import com.resume.job.tracker.repository.UserRepository;
 import com.resume.job.tracker.service.ResumeService;
@@ -12,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,7 +37,7 @@ public class ResumeServiceImpl implements ResumeService {
             PDFTextStripper pdfTextStripper = new PDFTextStripper();
              newText= pdfTextStripper.getText(document);
         }
-        User user = userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("User not exists: " + email));
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException("User not exists: " + email));
         Resume resume = new Resume();
         resume.setUser(user);
         resume.setUploadedAt(LocalDateTime.now());
@@ -69,10 +70,10 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public ResumeUploadResponse getResumeById(Long id, String email) throws IllegalAccessException {
+    public ResumeUploadResponse getResumeById(Long id, String email) {
         Resume rs = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
         if(!rs.getUser().getEmail().equals(email)){
-            throw new IllegalAccessException("You do not have permission to access this resume.");
+            throw new UnauthorizedAccessException("You do not have permission to access this resume.");
         }
         ResumeUploadResponse rsUploadResponse = new ResumeUploadResponse();
         rsUploadResponse.setOriginalFileName(rs.getOriginalFileName());
@@ -82,10 +83,10 @@ public class ResumeServiceImpl implements ResumeService {
         return  rsUploadResponse;
     }
     @Override
-    public void deleteResume(Long id, String email) throws IllegalAccessException {
+    public void deleteResume(Long id, String email) {
         Resume dlResume = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
         if(!dlResume.getUser().getEmail().equals(email)){
-            throw new IllegalAccessException("You do not have permission to delete this resume.");
+            throw new UnauthorizedAccessException("You do not have permission to delete this resume.");
         }else{
             resumeRepository.deleteById(id);
         }
@@ -93,10 +94,10 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public String getResumeTextById(Long resumeId, String email) throws IllegalAccessException {
+    public String getResumeTextById(Long resumeId, String email) {
         Resume resume = resumeRepository.findById(resumeId).orElseThrow(()-> new ResumeNotFoundException("Resume not found by Id: !" + resumeId));
         if(!resume.getUser().getEmail().equals(email)){
-            throw new IllegalAccessException("You do not have permission to access this resume.");
+            throw new UnauthorizedAccessException("You do not have permission to access this resume.");
         }
         return resume.getParsedText();
     }
@@ -106,7 +107,7 @@ public class ResumeServiceImpl implements ResumeService {
     @Override
     public ResumeUploadResponse saveGeneratedResume(SaveGeneratedResumeRequest request, String email) {
         User user = userRepository.findByEmail(email).orElseThrow(
-                ()-> new UsernameNotFoundException("User not found with email: " + email));
+                ()-> new UserNotFoundException("User not found with email: " + email));
        String jobTitle = request.getJobTitle() != null ? request.getJobTitle().replaceAll("\\s+", "_") : "Tailored";
        String companyName = request.getCompanyName() != null ? request.getCompanyName().replaceAll("\\s+", "_") : "Job";
        String fileName = "tailored_" + jobTitle + "_" + companyName + ".txt";
