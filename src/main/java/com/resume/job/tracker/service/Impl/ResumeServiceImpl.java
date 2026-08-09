@@ -1,6 +1,7 @@
 package com.resume.job.tracker.service.Impl;
 
 import com.resume.job.tracker.dto.ResumeUploadResponse;
+import com.resume.job.tracker.dto.SaveGeneratedResumeRequest;
 import com.resume.job.tracker.entity.Resume;
 import com.resume.job.tracker.entity.User;
 import com.resume.job.tracker.exceptions.ResumeNotFoundException;
@@ -56,14 +57,14 @@ public class ResumeServiceImpl implements ResumeService {
        User user = userRepository.findByEmail(email).orElseThrow();
        List<Resume> resumes = resumeRepository.findByUserId(user.getId());
        List<ResumeUploadResponse> resumeUploadResponses = new ArrayList<>();
-       ResumeUploadResponse response = new ResumeUploadResponse();
        for(Resume resume: resumes){
+           ResumeUploadResponse response = new ResumeUploadResponse();
            response.setParsedText(resume.getParsedText().substring(0, Math.min(200, resume.getParsedText().length())));
            response.setUploadedAt(resume.getUploadedAt());
            response.setId(resume.getId());
            response.setOriginalFileName(resume.getOriginalFileName());
+           resumeUploadResponses.add(response);
        }
-       resumeUploadResponses.add(response);
         return resumeUploadResponses;
     }
 
@@ -92,13 +93,38 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public String getResumeTextById(Long resumeId, Long userId) throws IllegalAccessException {
+    public String getResumeTextById(Long resumeId, String email) throws IllegalAccessException {
         Resume resume = resumeRepository.findById(resumeId).orElseThrow(()-> new ResumeNotFoundException("Resume not found by Id: !" + resumeId));
-        if(!resume.getUser().getId().equals(userId)){
-         throw new IllegalAccessException("You do not have permission to delete this resume.");
-
+        if(!resume.getUser().getEmail().equals(email)){
+            throw new IllegalAccessException("You do not have permission to access this resume.");
         }
         return resume.getParsedText();
+    }
+
+
+
+    @Override
+    public ResumeUploadResponse saveGeneratedResume(SaveGeneratedResumeRequest request, String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                ()-> new UsernameNotFoundException("User not found with email: " + email));
+       String jobTitle = request.getJobTitle() != null ? request.getJobTitle().replaceAll("\\s+", "_") : "Tailored";
+       String companyName = request.getCompanyName() != null ? request.getCompanyName().replaceAll("\\s+", "_") : "Job";
+       String fileName = "tailored_" + jobTitle + "_" + companyName + ".txt";
+
+        Resume resume = new Resume();
+        resume.setUser(user);
+        resume.setUploadedAt(LocalDateTime.now());
+        resume.setParsedText(request.getGeneratedResumeText());
+        resume.setOriginalFileName(fileName);
+
+        Resume savedResume = resumeRepository.save(resume);
+        return new ResumeUploadResponse(
+                savedResume.getOriginalFileName(),
+                savedResume.getId(),
+                savedResume.getUploadedAt(),
+                savedResume.getParsedText().substring(0, Math.min(200, savedResume.getParsedText().length()))
+        );
+
     }
 
 }
