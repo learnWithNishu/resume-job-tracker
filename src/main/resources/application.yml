@@ -1,18 +1,23 @@
 spring:
   application:
-    name: resume-jobTracker
+    name: USER-SERVICE
   datasource:
-    url: jdbc:postgresql://localhost:5432/resumetracker
+    url: jdbc:postgresql://localhost:5433/resumetracker
     username: postgres
     password: postgres
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
-
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      embedding:
+        model: nomic-embed-text
   servlet:
     multipart:
       max-file-size: 10MB
@@ -20,6 +25,12 @@ spring:
 server:
   port: 8081
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
 app:
   jwt:
     secret: ${JWT_SECRET}
