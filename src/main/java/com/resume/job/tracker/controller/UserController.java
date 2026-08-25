@@ -7,6 +7,7 @@ import com.resume.job.tracker.dto.UserRegisterRequest;
 import com.resume.job.tracker.dto.UserResponse;
 import com.resume.job.tracker.service.UserService;
 import jakarta.persistence.Id;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,11 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<String> getMe(){
         return ResponseEntity.ok("You are authenticated");
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserResponse(@PathVariable("id") Long id){
+        return ResponseEntity.ok().body(userService.getUser(id));
     }
 
 }
