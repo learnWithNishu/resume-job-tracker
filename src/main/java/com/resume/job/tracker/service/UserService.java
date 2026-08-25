@@ -12,4 +12,5 @@ public interface UserService {
 
     UserResponse registerUser(UserRegisterRequest request);
     LoginResponse loginUser(LoginRequest loginRequest);
+    UserResponse getUser(Long id);
 }
