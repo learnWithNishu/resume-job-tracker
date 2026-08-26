@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,6 +72,7 @@ public class ResumeServiceImpl implements ResumeService {
         return resumeUploadResponses;
     }
 
+    @Cacheable(value = "resumes", key = "#resumeId + '-' + #email")
     @Override
     public ResumeUploadResponse getResumeById(Long id, String email) {
         Resume rs = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
@@ -82,6 +86,8 @@ public class ResumeServiceImpl implements ResumeService {
         rsUploadResponse.setParsedText(rs.getParsedText());
         return  rsUploadResponse;
     }
+
+    @CacheEvict(value = "resumes", key = "#id + '-' + #email")
     @Override
     public void deleteResume(Long id, String email) {
         Resume dlResume = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
@@ -93,6 +99,7 @@ public class ResumeServiceImpl implements ResumeService {
 
     }
 
+    @Cacheable(value = "resumeText", key = "#resumeId + '-' + #email")
     @Override
     public String getResumeTextById(Long resumeId, String email) {
         Resume resume = resumeRepository.findById(resumeId).orElseThrow(()-> new ResumeNotFoundException("Resume not found by Id: !" + resumeId));
@@ -128,4 +135,16 @@ public class ResumeServiceImpl implements ResumeService {
 
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "resumes", key = "#id + '-' + #email"),
+            @CacheEvict(value = "resumeText", key = "#id + '-' + #email")
+    })
+    public void deleteResumeWithTextEviction(Long id, String email){
+        Resume dlResume = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
+        if(!dlResume.getUser().getEmail().equals(email)){
+            throw new UnauthorizedAccessException("You do not have permission to delete this resume.");
+        }else{
+            resumeRepository.deleteById(id);
+        }
+    }
 }
