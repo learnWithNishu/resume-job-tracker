@@ -12,6 +12,7 @@ import com.resume.job.tracker.repository.UserRepository;
 import com.resume.job.tracker.service.JwtService;
 import com.resume.job.tracker.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ public class UserServiceImpl implements UserService {
 
     private final JwtService jwtService;
 
+    @Cacheable(value = "users", key = "#result.email")
     @Override
     public UserResponse registerUser(UserRegisterRequest request) {
        if(userRepository.findByEmail(request.getEmail()).isPresent()){
