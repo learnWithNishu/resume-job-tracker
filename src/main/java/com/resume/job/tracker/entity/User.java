@@ -18,7 +18,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name ="users")
+@Table(name ="users",
+       indexes = {
+        @Index(name = "idx_users_email", columnList = "email")
+       })
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

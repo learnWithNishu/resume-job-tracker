@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "resume", indexes = {
+        @Index(name = "idx_resume_user_id", columnList = "user_id"),
+        @Index(name = "idx_resume_uploaded_at", columnList = "uploaded_at")
+})
 public class Resume {
 
     @Id
