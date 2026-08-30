@@ -6,6 +6,7 @@ import com.resume.job.tracker.exceptions.UnauthorizedAccessException;
 import com.resume.job.tracker.service.ResumeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,9 +28,10 @@ public class ResumeController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllResumes(){
+    public ResponseEntity<Page<ResumeUploadResponse>> getAllResumes(@RequestParam(defaultValue = "0") int page,
+                                                                       @RequestParam(defaultValue = "10") int size){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.status(HttpStatus.OK).body(resumeService.getAllResumes(email));
+        return ResponseEntity.status(HttpStatus.OK).body(resumeService.getAllResumes(email, page, size));
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> getResume(@PathVariable Long id)  {

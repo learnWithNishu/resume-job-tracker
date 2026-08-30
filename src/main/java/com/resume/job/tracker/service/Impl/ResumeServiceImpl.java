@@ -17,6 +17,10 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,25 +61,25 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public List<ResumeUploadResponse> getAllResumes(String email){
-       User user = userRepository.findByEmail(email).orElseThrow();
-       List<Resume> resumes = resumeRepository.findByUserId(user.getId());
-       List<ResumeUploadResponse> resumeUploadResponses = new ArrayList<>();
-       for(Resume resume: resumes){
-           ResumeUploadResponse response = new ResumeUploadResponse();
-           response.setParsedText(resume.getParsedText().substring(0, Math.min(200, resume.getParsedText().length())));
-           response.setUploadedAt(resume.getUploadedAt());
-           response.setId(resume.getId());
-           response.setOriginalFileName(resume.getOriginalFileName());
-           resumeUploadResponses.add(response);
-       }
-        return resumeUploadResponses;
+    public Page<ResumeUploadResponse> getAllResumes(String email, int page, int size){
+       User user = userRepository.findByEmail(email)
+               .orElseThrow(()-> new UserNotFoundException("User not found"));
+        Pageable pageable = PageRequest.of(page,size, Sort.by("uploadedAt").descending());
+        Page<Resume> resumePage = resumeRepository.findByUserId(user.getId(), pageable);
+        return  resumePage.map(resume -> {
+            ResumeUploadResponse response = new ResumeUploadResponse();
+            response.setId(resume.getId());
+            response.setOriginalFileName(resume.getOriginalFileName());
+            response.setUploadedAt(resume.getUploadedAt());
+            response.setParsedText(resume.getParsedText().substring(0, Math.min(200, resume.getParsedText().length())));
+            return response;
+        });
     }
 
     @Cacheable(value = "resumes", key = "#resumeId + '-' + #email")
     @Override
     public ResumeUploadResponse getResumeById(Long id, String email) {
-        Resume rs = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
+        Resume rs = resumeRepository.findByIdWithUser(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
         if(!rs.getUser().getEmail().equals(email)){
             throw new UnauthorizedAccessException("You do not have permission to access this resume.");
         }
@@ -90,7 +94,7 @@ public class ResumeServiceImpl implements ResumeService {
     @CacheEvict(value = "resumes", key = "#id + '-' + #email")
     @Override
     public void deleteResume(Long id, String email) {
-        Resume dlResume = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
+        Resume dlResume = resumeRepository.findByIdWithUser(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
         if(!dlResume.getUser().getEmail().equals(email)){
             throw new UnauthorizedAccessException("You do not have permission to delete this resume.");
         }else{
@@ -102,7 +106,7 @@ public class ResumeServiceImpl implements ResumeService {
     @Cacheable(value = "resumeText", key = "#resumeId + '-' + #email")
     @Override
     public String getResumeTextById(Long resumeId, String email) {
-        Resume resume = resumeRepository.findById(resumeId).orElseThrow(()-> new ResumeNotFoundException("Resume not found by Id: !" + resumeId));
+        Resume resume = resumeRepository.findByIdWithUser(resumeId).orElseThrow(()-> new ResumeNotFoundException("Resume not found by Id: !" + resumeId));
         if(!resume.getUser().getEmail().equals(email)){
             throw new UnauthorizedAccessException("You do not have permission to access this resume.");
         }
@@ -140,7 +144,7 @@ public class ResumeServiceImpl implements ResumeService {
             @CacheEvict(value = "resumeText", key = "#id + '-' + #email")
     })
     public void deleteResumeWithTextEviction(Long id, String email){
-        Resume dlResume = resumeRepository.findById(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
+        Resume dlResume = resumeRepository.findByIdWithUser(id).orElseThrow(()-> new ResumeNotFoundException("Resume not found!"));
         if(!dlResume.getUser().getEmail().equals(email)){
             throw new UnauthorizedAccessException("You do not have permission to delete this resume.");
         }else{
