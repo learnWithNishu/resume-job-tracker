@@ -67,13 +67,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUser(Long id){
         User user = userRepository.findById(id).orElseThrow(()-> new UserNotFoundException("User not found with Id: " + id));
-        UserResponse response = new UserResponse(
-                id,
-                user.getName(),
-                user.getEmail(),
-                user.getCreatedAt()
-        );
-                return response;
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setName(user.getName());
+        response.setEmail(user.getEmail());
+        response.setCreatedAt(user.getCreatedAt());
+        return response;
     }
 
 

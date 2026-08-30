@@ -16,6 +16,7 @@ public class UserResponse implements Serializable {
     private String name;
     private String email;
     private LocalDateTime createdAt;
+    private String password;
     private static final long serialVersionUID = 1L;
 
 }
