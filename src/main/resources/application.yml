@@ -2,7 +2,7 @@ spring:
   application:
     name: USER-SERVICE
   datasource:
-    url: jdbc:postgresql://localhost:5433/resumetracker
+    url: jdbc:postgresql://localhost:5432/resumetracker
     username: postgres
     password: postgres
     hikari:
@@ -30,6 +30,8 @@ spring:
           max-active: 10
           max-idle: 5
           min-idle: 1
+  kafka:
+    bootstrap-servers: localhost:9092
   ai:
     ollama:
       base-url: http://localhost:11434
