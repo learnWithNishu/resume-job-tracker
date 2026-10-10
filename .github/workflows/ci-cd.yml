@@ -89,6 +89,7 @@ jobs:
         run: |
           mvn verify sonar:sonar \
             -DskipTests \
+            -Dsonar.token="${{ secrets.SONAR_TOKEN }}" \
             -Dsonar.projectKey=codewithnishu221_user-service \
             -Dsonar.organization=codewithnishu221 \
             -Dsonar.host.url=https://sonarcloud.io
