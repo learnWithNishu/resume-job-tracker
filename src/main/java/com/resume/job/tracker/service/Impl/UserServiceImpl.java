@@ -1,13 +1,13 @@
 package com.resume.job.tracker.service.Impl;
 
-import com.resume.job.tracker.dto.LoginRequest;
-import com.resume.job.tracker.dto.LoginResponse;
-import com.resume.job.tracker.dto.UserRegisterRequest;
-import com.resume.job.tracker.dto.UserResponse;
+import com.resume.job.tracker.client.TrackerServiceClient;
+import com.resume.job.tracker.dto.*;
+import com.resume.job.tracker.entity.Resume;
 import com.resume.job.tracker.entity.User;
 import com.resume.job.tracker.exceptions.EmailAlreadyExistsException;
 import com.resume.job.tracker.exceptions.InvalidCredentialsException;
 import com.resume.job.tracker.exceptions.UserNotFoundException;
+import com.resume.job.tracker.repository.ResumeRepository;
 import com.resume.job.tracker.repository.UserRepository;
 import com.resume.job.tracker.service.JwtService;
 import com.resume.job.tracker.service.UserService;
@@ -17,14 +17,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 @AllArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ResumeRepository resumeRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final TrackerServiceClient trackerServiceClient;
     private final JwtService jwtService;
 
     @Cacheable(value = "users", key = "#result.email")
@@ -73,6 +76,54 @@ public class UserServiceImpl implements UserService {
         response.setEmail(user.getEmail());
         response.setCreatedAt(user.getCreatedAt());
         return response;
+    }
+
+    @Override
+    public UserProfileResponse getUserProfile(String email) {
+       User user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException(
+               "User not found: " + email));
+        List<Resume> resumes = resumeRepository.findByUserId(user.getId());
+        int totalResumes = resumes.size();
+        String mostRecentFileName = resumes.isEmpty() ? null :
+                resumes.stream()
+                        .max(Comparator.comparing(Resume::getUploadedAt))
+                        .map(Resume::getOriginalFileName)
+                        .orElse(null);
+        TrackerStatsDto stats = trackerServiceClient.getApplicationStats(user.getId());
+
+        List<RecentApplicationSummary> recentActivity = trackerServiceClient.getRecentApplications(user.getId());
+
+        Double interviewRate = null;
+        if(stats.getTotalApplications() != null && stats.getTotalApplications() > 0 && stats.getApplicationByStatus() != null){
+            Long interviews = stats.getApplicationByStatus().getOrDefault("INTERVIEW_SCHEDULED", 0L);
+            interviewRate = Math.round( (interviews * 100.0 / stats.getTotalApplications()) * 10.0) / 10.0;
+        }
+
+        String completeness;
+        if(totalResumes == 0){
+            completeness = "NEEDS_RESUME";
+        } else if (stats.getTotalApplications() == 0) {
+            completeness =  "NEEDS_APPLICATION";
+        } else {
+            completeness = "COMPLETE";
+        }
+        return  new UserProfileResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getCreatedAt(),
+                totalResumes,
+                mostRecentFileName,
+                stats.getTotalApplications(),
+                stats.getApplicationByStatus(),
+                stats.getAverageMatchScore(),
+                stats.getHighestMatchScore(),
+                stats.getTotalWithMatchScore(),
+                stats.getApplicationsThisMonth(),
+                recentActivity,
+                interviewRate,
+                completeness
+        );
     }
 
 

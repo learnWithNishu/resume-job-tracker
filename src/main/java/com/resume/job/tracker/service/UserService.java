@@ -1,16 +1,12 @@
 package com.resume.job.tracker.service;
 
-import java.util.List;
 
-import com.resume.job.tracker.dto.LoginRequest;
-import com.resume.job.tracker.dto.LoginResponse;
-import com.resume.job.tracker.dto.UserRegisterRequest;
-import com.resume.job.tracker.dto.UserResponse;
-import com.resume.job.tracker.entity.User;
+import com.resume.job.tracker.dto.*;
 
 public interface UserService {
 
     UserResponse registerUser(UserRegisterRequest request);
     LoginResponse loginUser(LoginRequest loginRequest);
     UserResponse getUser(Long id);
+    UserProfileResponse getUserProfile(String email);
 }
