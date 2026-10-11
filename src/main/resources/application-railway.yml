@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: USER-SERVICE
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      url: ${REDIS_URL}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      embedding:
+        model: nomic-embed-text
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: ${PORT:8081}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://eureka-server.railway.internal:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    hostname: ${RAILWAY_PRIVATE_DOMAIN:localhost}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 86400000
