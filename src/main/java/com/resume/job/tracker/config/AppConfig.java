@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,4 +29,8 @@ public class AppConfig {
         return provider;
     }
 
+    @Bean("trackerRestClient")
+    public RestClient trackerRestClient(RestClient.Builder builder){
+        return builder.baseUrl("lb://APPLICATION-TRACKER-SERVICE").build();
+    }
 }

@@ -1,10 +1,7 @@
 package com.resume.job.tracker.controller;
 
 
-import com.resume.job.tracker.dto.LoginRequest;
-import com.resume.job.tracker.dto.LoginResponse;
-import com.resume.job.tracker.dto.UserRegisterRequest;
-import com.resume.job.tracker.dto.UserResponse;
+import com.resume.job.tracker.dto.*;
 import com.resume.job.tracker.service.UserService;
 import jakarta.persistence.Id;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -38,6 +36,14 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserResponse(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(userService.getUser(id));
+    }
+
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileResponse> getUserProfile(){
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return ResponseEntity.ok(userService.getUserProfile(email));
     }
 
 }

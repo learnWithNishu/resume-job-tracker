@@ -18,6 +18,9 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     @Query("Select r from Resume r JOIN fetch r.user u where u.id= :userId")
     Page<Resume> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
+    // for getUserProfile with all resumes
+    @Query("Select r from Resume r JOIN fetch r.user u where u.id =:userId")
+    List<Resume> findByUserId(@Param("userId") Long userId);
     @Query("Select r from Resume r JOIN Fetch r.user u where r.id = :id")
     Optional<Resume> findByIdWithUser(@Param("id") Long id);
 
